@@ -7,6 +7,7 @@ from random import Random
 from bonus import *
 from multiprocessing import Process, Queue
 import time
+from test_camera import *
 
 
 class Window:
@@ -41,6 +42,8 @@ class Window:
 
         self.queue = Queue()
         self.returnQueue = Queue()
+
+        self.camera = Camera()
 
     def redraw_window(self):
         self.window.fill((255, 255, 255))
@@ -133,11 +136,18 @@ class Window:
         negativeBonusTimer = 0
         slowReset = 0
 
+        self.camera.open_camera()
+
         while self.running:
             self.clock.tick(40)
             self.check_player_and_ball_collision()
             self.check_player_and_bonus_collision()
             self.check_player_and_negative_bonus_collision()
+
+            self.camera.update_camera()
+
+            if self.camera.isFiring:
+                self.player1.fire()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -150,15 +160,16 @@ class Window:
                     self.player2.fire()
                 elif keys[pygame.K_ESCAPE]:
                     self.running = False
+                    self.camera.close_camera()
                     self.queue.put('quit')
                     break
 
             if self.player1.lives > 0:
-                PlayerMovement.update_player_position(self.player1)
+                PlayerMovement.update_player_position(self.player1, self.camera.direction)
                 Projectile.update_projectile(self.player1.projectile)
 
             if self.player2.lives > 0:
-                PlayerMovement.update_player_position(self.player2)
+                PlayerMovement.update_player_position(self.player2, 0)
                 Projectile.update_projectile(self.player2.projectile)
 
             rand = Random()
