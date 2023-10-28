@@ -7,7 +7,7 @@ from random import Random
 from bonus import *
 from multiprocessing import Process, Queue
 import time
-from test_camera import *
+from camera import *
 
 
 class Window:
