@@ -48,11 +48,15 @@ class Camera:
 
         mask = mask_h * mask_s * mask_v
 
+        # Applied Morphological close method to drastically reduce
+        # the number of contours resulted from the mask
+        # 5x5 kernel seemed to have the best results
         kernel = np.ones((5, 5), np.uint8)
 
         mask_close = cv2.dilate(src=mask, kernel=kernel, iterations=1)
         mask_close = cv2.erode(src=mask_close, kernel=kernel, iterations=1)
 
+        # Comparison between the normal and closed mask
         cv2.imshow("Mask Close", mask_close * 255)
         cv2.imshow("Mask", mask * 255)
 

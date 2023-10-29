@@ -14,6 +14,9 @@ def process_contours(mask):
 
     mask_filtered = np.zeros(mask.shape, dtype=np.uint8)
 
+    if (len(contours)) != 1:
+        return 0, False
+
     for i in range(len(contours)):
         contour = contours[i]
         contour_area = cv2.contourArea(contour)
