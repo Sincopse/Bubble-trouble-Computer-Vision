@@ -1,17 +1,18 @@
 import cv2
 from segmentation import process_contours
+import numpy as np
 
 
 class Camera:
 
     def __init__(self):
 
-        self.h_min = 65
-        self.h_max = 90
+        self.h_min = 50
+        self.h_max = 75
         self.s_min = 79
         self.s_max = 255
         self.v_min = 54
-        self.v_max = 214
+        self.v_max = 255
 
         self.direction = 0
         self.isFiring = False
@@ -19,7 +20,7 @@ class Camera:
         self.cap = None
         self.image_hsv = None
 
-    def update_segmentation(self):
+    def segment(self):
         if self.h_min < self.h_max:
             _, mask_h_min = cv2.threshold(src=self.image_hsv[:, :, 0], thresh=self.h_min,
                                           maxval=1, type=cv2.THRESH_BINARY)
@@ -46,9 +47,16 @@ class Camera:
         mask_v = mask_v_min * mask_v_max
 
         mask = mask_h * mask_s * mask_v
+
+        kernel = np.ones((5, 5), np.uint8)
+
+        mask_close = cv2.dilate(src=mask, kernel=kernel, iterations=1)
+        mask_close = cv2.erode(src=mask_close, kernel=kernel, iterations=1)
+
+        cv2.imshow("Mask Close", mask_close * 255)
         cv2.imshow("Mask", mask * 255)
 
-        self.direction, self.isFiring = process_contours(mask)
+        self.direction, self.isFiring = process_contours(mask_close)
 
     # <editor-fold desc="TrackBarUpdaters">
 
@@ -94,7 +102,7 @@ class Camera:
         image = image[:, ::-1, :]
         cv2.imshow("Image", image)
         self.image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        self.update_segmentation()
+        self.segment()
 
     def close_camera(self):
         self.cap.release()

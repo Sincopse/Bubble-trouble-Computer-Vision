@@ -23,6 +23,10 @@ def process_contours(mask):
             m = cv2.moments(contour)
             cx = int(np.round(m['m10'] / m['m00']))  # Center x
             cy = int(np.round(m['m01'] / m['m00']))  # Center y
+
+            cv2.circle(img=mask_filtered, center=(cx, cy),
+                       radius=6, color=(0, 0, 0), thickness=2)
+
             perimeter = cv2.arcLength(curve=contour, closed=True)
             if cx > (2 / 3) * mask.shape[1]:
                 cv2.rectangle(img=mask_filtered,
@@ -60,7 +64,7 @@ def process_contours(mask):
     return direction, is_firing
 
 
-def process_contours_new(mask):
+def process_contours_test(mask):
     contours, hierarchy = cv2.findContours(image=mask,
                                            mode=cv2.RETR_TREE,
                                            method=cv2.CHAIN_APPROX_NONE)
