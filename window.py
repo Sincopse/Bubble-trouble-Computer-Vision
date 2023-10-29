@@ -152,6 +152,7 @@ class Window:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    self.camera.close_camera()
                     self.queue.put('quit')
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_SPACE]:
@@ -165,11 +166,11 @@ class Window:
                     break
 
             if self.player1.lives > 0:
-                PlayerMovement.update_player_position(self.player1, self.camera.direction)
+                PlayerMovement.update_player_exact_position(self.player1, self.camera.direction)
                 Projectile.update_projectile(self.player1.projectile)
 
             if self.player2.lives > 0:
-                PlayerMovement.update_player_position(self.player2, 0)
+                PlayerMovement.update_player_position(self.player2)
                 Projectile.update_projectile(self.player2.projectile)
 
             rand = Random()

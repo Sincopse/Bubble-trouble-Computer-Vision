@@ -60,7 +60,8 @@ class Camera:
         cv2.imshow("Mask Close", mask_close * 255)
         cv2.imshow("Mask", mask * 255)
 
-        self.direction, self.isFiring = process_contours(mask_close)
+        self.direction, self.isFiring = process_contours(mask_close, self.image_hsv)
+        cv2.imshow("Image", cv2.cvtColor(self.image_hsv, cv2.COLOR_HSV2BGR))
 
     # <editor-fold desc="TrackBarUpdaters">
 
