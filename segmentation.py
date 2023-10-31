@@ -2,6 +2,53 @@ import cv2
 import numpy as np
 
 
+def segment(image_hsv, h_min, h_max, s_min, s_max, v_min, v_max):
+    if h_min < h_max:
+        _, mask_h_min = cv2.threshold(src=image_hsv[:, :, 0], thresh=h_min,
+                                      maxval=1, type=cv2.THRESH_BINARY)
+        _, mask_h_max = cv2.threshold(src=image_hsv[:, :, 0], thresh=h_max,
+                                      maxval=1, type=cv2.THRESH_BINARY_INV)
+        mask_h = mask_h_min * mask_h_max
+    else:
+        _, mask_h_min = cv2.threshold(src=image_hsv[:, :, 0], thresh=h_min,
+                                      maxval=1, type=cv2.THRESH_BINARY_INV)
+        _, mask_h_max = cv2.threshold(src=image_hsv[:, :, 0], thresh=h_max,
+                                      maxval=1, type=cv2.THRESH_BINARY)
+        mask_h = cv2.bitwise_or(mask_h_min, mask_h_max)
+
+    _, mask_s_min = cv2.threshold(src=image_hsv[:, :, 1], thresh=s_min,
+                                  maxval=1, type=cv2.THRESH_BINARY)
+    _, mask_smax = cv2.threshold(src=image_hsv[:, :, 1], thresh=s_max,
+                                 maxval=1, type=cv2.THRESH_BINARY_INV)
+    mask_s = mask_s_min * mask_smax
+
+    _, mask_v_min = cv2.threshold(src=image_hsv[:, :, 2], thresh=v_min,
+                                  maxval=1, type=cv2.THRESH_BINARY)
+    _, mask_v_max = cv2.threshold(src=image_hsv[:, :, 2], thresh=v_max,
+                                  maxval=1, type=cv2.THRESH_BINARY_INV)
+    mask_v = mask_v_min * mask_v_max
+
+    mask = mask_h * mask_s * mask_v
+
+    # Applied Morphological open after a close method to drastically reduce
+    # the number of contours resulted from the mask
+    # 5x5 kernel seemed to have the best results
+    kernel = np.ones((5, 5), np.uint8)
+
+    mask_close = cv2.erode(src=mask, kernel=kernel, iterations=1)
+    mask_close = cv2.dilate(src=mask_close, kernel=kernel, iterations=2)
+    mask_close = cv2.erode(src=mask_close, kernel=kernel, iterations=1)
+
+    # Comparison between the normal and closed mask
+    cv2.imshow("Mask Close", mask_close * 255)
+    cv2.imshow("Mask", mask * 255)
+
+    direction, is_firing = process_contours(mask_close, image_hsv)
+    cv2.imshow("Image", cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR))
+
+    return direction, is_firing
+
+
 def process_contours(mask, camera_output):
     contours, hierarchy = cv2.findContours(image=mask,
                                            mode=cv2.RETR_TREE,

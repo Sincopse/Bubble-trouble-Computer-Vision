@@ -146,7 +146,7 @@ class Window:
 
             self.camera.update_camera()
 
-            if self.camera.isFiring:
+            if self.camera.is_firing:
                 self.player1.fire()
 
             for event in pygame.event.get():
