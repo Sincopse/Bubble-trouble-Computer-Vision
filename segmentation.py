@@ -36,15 +36,17 @@ def segment(image_hsv, h_min, h_max, s_min, s_max, v_min, v_max, number):
     kernel = np.ones((5, 5), np.uint8)
 
     mask_close = cv2.erode(src=mask, kernel=kernel, iterations=1)
-    mask_close = cv2.dilate(src=mask_close, kernel=kernel, iterations=2)
-    mask_close = cv2.erode(src=mask_close, kernel=kernel, iterations=1)
+    mask_close = cv2.dilate(src=mask_close, kernel=kernel, iterations=1)
 
     # Comparison between the normal and closed mask
-    cv2.imshow("Mask" + str(number), mask * 255)
+    # cv2.imshow("Mask", mask * 255)
 
-    direction, is_firing = process_contours(mask_close, image_hsv)
+    position, is_firing = process_contours(mask_close, image_hsv)
 
-    return direction, is_firing, cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
+    if number == 1:
+        return position, is_firing, cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
+    else:
+        return position, is_firing, mask * 255
 
 
 def process_contours(mask, camera_output):
@@ -73,6 +75,7 @@ def process_contours(mask, camera_output):
 
         cx = int(np.round(m['m10'] / m['m00']))  # Center x
         cy = int(np.round(m['m01'] / m['m00']))  # Center y
+
         cv2.circle(img=camera_output, center=(cx, cy),
                    radius=4, color=(0, 255, 255), thickness=2)
 

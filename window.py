@@ -1,3 +1,5 @@
+import pygame
+
 import points
 from player import *
 from player_movement import PlayerMovement
@@ -44,6 +46,8 @@ class Window:
         self.returnQueue = Queue()
 
         self.camera = CameraPlayerController()
+        self.font = pygame.font.SysFont("Times New Roman", 30)
+        self.game_started = False
 
     def redraw_window(self):
         self.window.fill((255, 255, 255))
@@ -97,9 +101,8 @@ class Window:
                             self.queue.put('all_players_died')
                             player1_score, player2_score = self.returnQueue.get()
                             black = (0, 0, 0)
-                            myFont = pygame.font.SysFont("Times New Roman", 30)
-                            player1_score_text = myFont.render(('Player 1 scored: %d' % player1_score), 1, black)
-                            player2_score_text = myFont.render(('Player 2 scored: %d' % player2_score), 1, black)
+                            player1_score_text = self.font.render(('Player 1 scored: %d' % player1_score), 1, black)
+                            player2_score_text = self.font.render(('Player 2 scored: %d' % player2_score), 1, black)
 
                             self.window.blit(player1_score_text, (50, 463))
                             self.window.blit(player2_score_text, (450, 463))
@@ -125,7 +128,25 @@ class Window:
                     self.slowed = True
                 self.negativeBonus.enabled = False
 
+    def calibrate_cameras(self):
+        while not self.game_started:
+            if not self.game_started:
+                self.camera.update_camera(0)
+                self.window.fill(0)
+                start_text = self.font.render("Press space to start", True, 255)
+                self.window.blit(start_text,
+                                 (self.windowWidth // 2 - start_text.get_width() // 2,
+                                  self.windowHeight // 2 - start_text.get_height() // 2))
+
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            self.game_started = True
+                            cv2.destroyAllWindows()
+
+
     def run_game(self):
+        self.calibrate_cameras()
         p1 = Process(target=points.increase_points, args=[self.queue, self.returnQueue])
         p1.start()
         img = pygame.image.load('Images/transparentBall.png')
@@ -142,11 +163,11 @@ class Window:
             self.check_player_and_bonus_collision()
             self.check_player_and_negative_bonus_collision()
 
-            self.camera.update_camera()
+            self.camera.update_camera(1)
 
-            if self.camera.camera_1.direction:
+            if self.camera.camera_1.is_firing:
                 self.player1.fire()
-            if self.camera.camera_2.direction:
+            if self.camera.camera_2.is_firing:
                 self.player2.fire()
 
             for event in pygame.event.get():
@@ -166,11 +187,11 @@ class Window:
                     break
 
             if self.player1.lives > 0:
-                PlayerMovement.update_player_exact_position(self.player1, self.camera.camera_1.direction)
+                PlayerMovement.update_player_exact_position(self.player1, self.camera.camera_1.position)
                 Projectile.update_projectile(self.player1.projectile)
 
             if self.player2.lives > 0:
-                PlayerMovement.update_player_exact_position(self.player2, self.camera.camera_2.direction)
+                PlayerMovement.update_player_exact_position(self.player2, self.camera.camera_2.position)
                 Projectile.update_projectile(self.player2.projectile)
 
             rand = Random()
