@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def segment(image_hsv, h_min, h_max, s_min, s_max, v_min, v_max):
+def segment(image_hsv, h_min, h_max, s_min, s_max, v_min, v_max, number):
     if h_min < h_max:
         _, mask_h_min = cv2.threshold(src=image_hsv[:, :, 0], thresh=h_min,
                                       maxval=1, type=cv2.THRESH_BINARY)
@@ -40,13 +40,11 @@ def segment(image_hsv, h_min, h_max, s_min, s_max, v_min, v_max):
     mask_close = cv2.erode(src=mask_close, kernel=kernel, iterations=1)
 
     # Comparison between the normal and closed mask
-    cv2.imshow("Mask Close", mask_close * 255)
-    cv2.imshow("Mask", mask * 255)
+    cv2.imshow("Mask" + str(number), mask * 255)
 
     direction, is_firing = process_contours(mask_close, image_hsv)
-    cv2.imshow("Image", cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR))
 
-    return direction, is_firing
+    return direction, is_firing, cv2.cvtColor(image_hsv, cv2.COLOR_HSV2BGR)
 
 
 def process_contours(mask, camera_output):
@@ -86,7 +84,5 @@ def process_contours(mask, camera_output):
                           pt2=(mask.shape[1] - 10, 10),
                           color=(1, 1, 1), thickness=6)
             is_firing = True
-
-    cv2.imshow("Mask Filtered", mask_filtered * 255)
 
     return direction, is_firing
