@@ -131,7 +131,7 @@ class Window:
     def calibrate_cameras(self):
         while not self.game_started:
             if not self.game_started:
-                self.camera.update_camera(0)
+                self.camera.update_camera(True)
                 self.window.fill(0)
                 start_text = self.font.render("Press space to start", True, 255)
                 self.window.blit(start_text,
@@ -163,7 +163,7 @@ class Window:
             self.check_player_and_bonus_collision()
             self.check_player_and_negative_bonus_collision()
 
-            self.camera.update_camera(1)
+            self.camera.update_camera(False)
 
             if self.camera.camera_1.is_firing:
                 self.player1.fire()
