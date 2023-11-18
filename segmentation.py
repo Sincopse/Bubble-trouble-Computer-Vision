@@ -30,7 +30,7 @@ def segment(image_hsv, threshold, output_as_mask):
 
     mask = mask_h * mask_s * mask_v
 
-    # Applied Morphological open close method to reduce
+    # Applied Morphological open method to reduce
     # the number of contours resulted from the mask
     # 5x5 kernel seemed to have the best results
     kernel = np.ones((5, 5), np.uint8)
