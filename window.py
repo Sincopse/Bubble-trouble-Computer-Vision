@@ -131,7 +131,7 @@ class Window:
     def calibrate_cameras(self):
         while not self.game_started:
             if not self.game_started:
-                self.camera.update_camera(True)
+                self.camera.update_camera()
                 self.window.fill(0)
                 start_text = self.font.render("Press space to start", True, 255)
                 self.window.blit(start_text,
@@ -163,11 +163,11 @@ class Window:
             self.check_player_and_bonus_collision()
             self.check_player_and_negative_bonus_collision()
 
-            self.camera.update_camera(False)
+            self.camera.update_camera()
 
-            if self.camera.camera_1.is_firing:
+            if self.camera.isPlayer1Firing:
                 self.player1.fire()
-            if self.camera.camera_2.is_firing:
+            if self.camera.isPlayer2Firing:
                 self.player2.fire()
 
             for event in pygame.event.get():
@@ -187,11 +187,11 @@ class Window:
                     break
 
             if self.player1.lives > 0:
-                PlayerMovement.update_player_exact_position(self.player1, self.camera.camera_1.position)
+                PlayerMovement.update_player_exact_position(self.player1, self.camera.player1Position)
                 Projectile.update_projectile(self.player1.projectile)
 
             if self.player2.lives > 0:
-                PlayerMovement.update_player_exact_position(self.player2, self.camera.camera_2.position)
+                PlayerMovement.update_player_exact_position(self.player2, self.camera.player2Position)
                 Projectile.update_projectile(self.player2.projectile)
 
             rand = Random()
