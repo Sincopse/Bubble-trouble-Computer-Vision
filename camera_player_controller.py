@@ -29,7 +29,7 @@ class CameraPlayerController:
          position2, self.isPlayer2Firing) = self.camera_1.process(
             image,
             67,
-            0
+            39
          )
 
         if position1 != -1:

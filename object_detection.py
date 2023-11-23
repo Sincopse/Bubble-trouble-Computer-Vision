@@ -32,7 +32,7 @@ class ObjectDetection:
             confidence = box[4]
             class_id = int(box[5])
 
-            if class_id == object_class_1 and confidence > 0.2:  # class_id == 0 and confidence > 0.8:
+            if class_id == object_class_1 and confidence > 0.7:  # class_id == 0 and confidence > 0.8:
                 cv2.rectangle(img=image_objects, pt1=pt1, pt2=pt2, color=(255, 0, 0), thickness=2)
                 text = "{}:{:.2f}".format(objects.names[class_id], confidence)
                 cv2.putText(img=image_objects,

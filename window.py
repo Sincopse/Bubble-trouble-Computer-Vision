@@ -47,7 +47,6 @@ class Window:
 
         self.camera = CameraPlayerController()
         self.font = pygame.font.SysFont("Times New Roman", 30)
-        self.game_started = False
 
     def redraw_window(self):
         self.window.fill((255, 255, 255))
@@ -129,21 +128,19 @@ class Window:
                 self.negativeBonus.enabled = False
 
     def calibrate_cameras(self):
-        while not self.game_started:
-            if not self.game_started:
-                self.camera.update_camera()
-                self.window.fill(0)
-                start_text = self.font.render("Press space to start", True, 255)
-                self.window.blit(start_text,
-                                 (self.windowWidth // 2 - start_text.get_width() // 2,
-                                  self.windowHeight // 2 - start_text.get_height() // 2))
+        while True:
+            self.camera.update_camera()
+            self.window.fill((255, 255, 255))
+            start_text = self.font.render("Press space to start", True, (255, 255, 255))
+            self.window.blit(start_text,
+                             (self.windowWidth // 2 - start_text.get_width() // 2,
+                              self.windowHeight // 2 - start_text.get_height() // 2))
 
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_RETURN:
-                            self.game_started = True
-                            cv2.destroyAllWindows()
-
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        cv2.destroyAllWindows()
+                        return
 
     def run_game(self):
         self.calibrate_cameras()
