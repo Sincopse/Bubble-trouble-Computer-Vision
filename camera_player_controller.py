@@ -1,6 +1,5 @@
 import numpy as np
 
-from object_detection import *
 from tracker import *
 
 
