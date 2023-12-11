@@ -130,16 +130,15 @@ class Window:
     def calibrate_cameras(self):
         while True:
             self.camera.update_camera()
-            self.window.fill((255, 255, 255))
-            start_text = self.font.render("Press space to start", True, (255, 255, 255))
-            self.window.blit(start_text,
-                             (self.windowWidth // 2 - start_text.get_width() // 2,
-                              self.windowHeight // 2 - start_text.get_height() // 2))
+            text_1 = self.font.render(('Pressiona Enter para Começar.'), 1, (255, 255, 255))
+            text_2 = self.font.render(('Seleciona o Objeto que queres capturar na câmera com o rato.'), 1, (255, 255, 255))
+            self.window.blit(text_1, (110, 277))
+            self.window.blit(text_2, (110, 311))
+            pygame.display.update()
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        cv2.destroyAllWindows()
                         return
 
     def run_game(self):
