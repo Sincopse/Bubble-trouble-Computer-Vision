@@ -7,31 +7,31 @@ class CameraPlayerController:
 
     def __init__(self):
         self.cap = cv2.VideoCapture()
+        self.frame = None
 
-        self.tracker_1 = Tracker()
-        self.tracker_2 = Tracker()
-        self.is_tracking = 0
+        self.trackers = [Tracker(), Tracker()]
+
+        self.current_tracker = False
 
         # Mouse Border Selector
         self.mouse_point_1 = None
         self.mouse_point_2 = None
         self.cropping = False
 
-        self.isPlayer1Firing = False
-        self.isPlayer2Firing = False
-        self.player1Position = 0
-        self.player2Position = 100
-
         cv2.namedWindow("Camera")
         cv2.setMouseCallback("Camera", self.click_and_crop)
 
-    def get_object_box(self):
-        if self.mouse_point_2 is not None and self.cropping is False:
-            return (self.mouse_point_1[0], self.mouse_point_1[1],
-                    self.mouse_point_2[0] - self.mouse_point_1[0],
-                    self.mouse_point_2[1] - self.mouse_point_1[1])
-        else:
-            return None
+        # Player Controlling Variables
+        self.isPlayer1Firing = False
+        self.isPlayer2Firing = False
+
+        self.player1Position = 0
+        self.player2Position = 100
+
+    def get_box(self):
+        return (self.mouse_point_1[0], self.mouse_point_1[1],
+                self.mouse_point_2[0] - self.mouse_point_1[0],
+                self.mouse_point_2[1] - self.mouse_point_1[1])
 
     def click_and_crop(self, event, x, y, flags, param):
 
@@ -40,11 +40,18 @@ class CameraPlayerController:
             self.cropping = True
 
         elif event == cv2.EVENT_LBUTTONUP:
-            self.mouse_point_2 = (x, y)
             self.cropping = False
+            self.mouse_point_2 = (x, y)
+
+            if self.frame is not None:
+                self.trackers[self.current_tracker].init_track(self.frame, self.get_box())
+                self.current_tracker = not self.current_tracker
+
+            self.mouse_point_1 = None
+            self.mouse_point_2 = None
 
         elif event == cv2.EVENT_MOUSEMOVE and self.cropping:
-            self.mouse_point_2 = (x, y)
+            cv2.rectangle(self.frame, self.mouse_point_1, (x, y), (0, 255, 0), 2)
 
     def update_camera(self):
         if not self.cap.isOpened():
@@ -53,41 +60,16 @@ class CameraPlayerController:
 
         image = image[:, ::-1, :]
 
-        frame = image.copy()
+        self.frame = image.copy()
 
-        # Completely bad code, I'll try to fix later, for now it works
-        box = self.get_object_box()
-        if box is not None and self.is_tracking == 0:
-            self.tracker_1.init_track(frame, box)
-            self.is_tracking = 1
-            self.mouse_point_1 = None
-            self.mouse_point_2 = None
-            self.cropping = False
+        position1, self.isPlayer1Firing = self.trackers[0].track(self.frame)
+        position2, self.isPlayer2Firing = self.trackers[1].track(self.frame)
+        if position1 != -1:
+            self.player1Position = position1
+        if position2 != -1:
+            self.player2Position = position2
 
-        box = self.get_object_box()
-        if box is not None and self.is_tracking == 1:
-            self.tracker_2.init_track(frame, box)
-            self.is_tracking = 2
-
-        if self.is_tracking == 1:
-            position1, self.isPlayer1Firing = self.tracker_1.track(frame)
-            if position1 != -1:
-                self.player1Position = position1
-
-        elif self.is_tracking == 2:
-            position1, self.isPlayer1Firing = self.tracker_1.track(frame)
-            position2, self.isPlayer2Firing = self.tracker_2.track(frame)
-            if position1 != -1:
-                self.player1Position = position1
-            if position2 != -1:
-                self.player2Position = position2
-
-        # End of terrible code
-
-        if self.mouse_point_2 is not None:
-            cv2.rectangle(frame, self.mouse_point_1, self.mouse_point_2, (0, 255, 0), 2)
-
-        cv2.imshow("Camera", frame)
+        cv2.imshow("Camera", self.frame)
 
     def close_camera(self):
         self.cap.release()
