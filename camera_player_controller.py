@@ -1,5 +1,3 @@
-import numpy as np
-
 from tracker import *
 
 
@@ -7,6 +5,7 @@ class CameraPlayerController:
 
     def __init__(self):
         self.cap = cv2.VideoCapture()
+        self.cap.open(0)
         self.frame = None
 
         self.trackers = [Tracker(), Tracker()]
@@ -16,7 +15,6 @@ class CameraPlayerController:
         # Mouse Border Selector
         self.mouse_point_1 = None
         self.mouse_point_2 = None
-        self.cropping = False
 
         cv2.namedWindow("Camera")
         cv2.setMouseCallback("Camera", self.click_and_crop)
@@ -34,13 +32,10 @@ class CameraPlayerController:
                 self.mouse_point_2[1] - self.mouse_point_1[1])
 
     def click_and_crop(self, event, x, y, flags, param):
-
         if event == cv2.EVENT_LBUTTONDOWN:
             self.mouse_point_1 = (x, y)
-            self.cropping = True
 
         elif event == cv2.EVENT_LBUTTONUP:
-            self.cropping = False
             self.mouse_point_2 = (x, y)
 
             if self.frame is not None:
@@ -50,24 +45,21 @@ class CameraPlayerController:
             self.mouse_point_1 = None
             self.mouse_point_2 = None
 
-        elif event == cv2.EVENT_MOUSEMOVE and self.cropping:
-            cv2.rectangle(self.frame, self.mouse_point_1, (x, y), (0, 255, 0), 2)
+        elif event == cv2.EVENT_MOUSEMOVE and self.mouse_point_1:
+            self.mouse_point_2 = (x, y)
 
     def update_camera(self):
-        if not self.cap.isOpened():
-            self.cap.open(0)
         _, image = self.cap.read()
 
         image = image[:, ::-1, :]
 
         self.frame = image.copy()
 
-        position1, self.isPlayer1Firing = self.trackers[0].track(self.frame)
-        position2, self.isPlayer2Firing = self.trackers[1].track(self.frame)
-        if position1 != -1:
-            self.player1Position = position1
-        if position2 != -1:
-            self.player2Position = position2
+        self.player1Position, self.isPlayer1Firing = self.trackers[0].track(self.frame)
+        self.player2Position, self.isPlayer2Firing = self.trackers[1].track(self.frame)
+
+        if self.mouse_point_2 is not None:
+            cv2.rectangle(self.frame, self.mouse_point_1, self.mouse_point_2, (0, 255, 0), 2)
 
         cv2.imshow("Camera", self.frame)
 
